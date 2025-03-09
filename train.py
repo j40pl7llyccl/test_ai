@@ -24,6 +24,7 @@ import time
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
+import json
 
 import numpy as np
 import torch
@@ -367,7 +368,19 @@ def train(hyp, opt, device, callbacks):  # hyp is path/to/hyp.yaml or hyp dictio
                                                 callbacks=callbacks,
                                                 compute_loss=compute_loss)
                 print("Epochs: ", epoch)
-                print("val/box_loss, val/obj_loss, val/cls_loss: ", results[4], results[5], results[6])               
+                print("val/box_loss, val/obj_loss, val/cls_loss: ", results[4], results[5], results[6])
+
+            epoch_result = {
+                "epoch": epoch,
+                "train_box_loss": mloss[0].item(),
+                "train_obj_loss": mloss[1].item(),
+                "train_cls_loss": mloss[2].item(),
+                "val_box_loss": results[4],
+                "val_obj_loss": results[5],
+                "val_cls_loss": results[6]
+            }
+
+            print(json.dumps(epoch_result), flush=True)
 
             # Update best mAP
             fi = fitness(np.array(results).reshape(1, -1))  # weighted combination of [P, R, mAP@.5, mAP@.5-.95]
